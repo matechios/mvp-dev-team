@@ -161,19 +161,6 @@
     .row.dup input[type="range"]::-webkit-slider-thumb { border-color: var(--danger); }
     .row.dup input[type="range"]::-moz-range-thumb { border-color: var(--danger); }
 
-    .error-box {
-      display: none;
-      margin-top: 16px;
-      padding: 10px 12px;
-      font-size: 13px;
-      line-height: 1.45;
-      color: var(--danger);
-      background: #fef2f2;
-      border: 1px solid #fecaca;
-      border-radius: 8px;
-    }
-    .error-box.show { display: block; }
-
     .actions { display: flex; gap: 10px; margin-top: 24px; }
     button {
       font: inherit; font-size: 14px; font-weight: 500;
@@ -188,8 +175,42 @@
     }
     .btn-primary:hover:not(:disabled) { background: var(--accent-dark); border-color: var(--accent-dark); }
     .btn-primary:disabled { opacity: .35; cursor: not-allowed; }
-    .btn-ghost { color: var(--text); background: #fff; border: 1px solid var(--line); }
-    .btn-ghost:hover { background: #f3f4f6; }
+    .warn-wrap { position: relative; flex: none; }
+    .btn-warn {
+      width: 42px; padding: 0;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--muted); background: #fff; border: 1px solid var(--line);
+      transition: color .2s, background .2s, border-color .2s;
+    }
+    .btn-warn svg { width: 18px; height: 18px; }
+    .btn-warn:hover { background: #f3f4f6; }
+    .btn-warn.active { color: var(--danger); background: #fef2f2; border-color: #fecaca; }
+    .btn-warn.active:hover { background: #fee2e2; }
+    .btn-warn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .btn-warn.active.pulse { animation: pulse .5s ease; }
+    @keyframes pulse { 0%,100% { transform: none; } 30% { transform: translateX(-2px); } 60% { transform: translateX(2px); } }
+
+    .tooltip {
+      position: absolute; left: 0; bottom: calc(100% + 10px);
+      width: max-content; max-width: min(280px, calc(100vw - 56px));
+      padding: 9px 12px;
+      font-size: 13px; font-weight: 500; line-height: 1.45;
+      color: #fff; background: var(--text);
+      border-radius: 8px;
+      box-shadow: 0 6px 18px rgba(17, 24, 39, .18);
+      opacity: 0; visibility: hidden; transform: translateY(4px);
+      transition: opacity .15s ease, transform .15s ease, visibility .15s;
+      pointer-events: none; z-index: 5;
+    }
+    .tooltip::after {
+      content: ""; position: absolute; left: 15px; top: 100%;
+      border: 6px solid transparent; border-top-color: var(--text);
+    }
+    .btn-warn.active ~ .tooltip { background: var(--danger); }
+    .btn-warn.active ~ .tooltip::after { border-top-color: var(--danger); }
+    .warn-wrap:hover .tooltip,
+    .warn-wrap.open .tooltip,
+    .btn-warn:focus-visible ~ .tooltip { opacity: 1; visibility: visible; transform: none; }
     .spinner {
       width: 14px; height: 14px; border-radius: 50%;
       border: 2px solid rgba(255,255,255,.35); border-top-color: #fff;
@@ -280,10 +301,13 @@
     <form id="larkForm" novalidate>
       <div id="sliders-container"></div>
 
-      <div id="errorBox" class="error-box" role="alert"></div>
-
       <div class="actions">
-        <button type="button" class="btn-ghost" id="resetBtn">Đặt lại</button>
+        <div class="warn-wrap" id="warnWrap">
+          <button type="button" class="btn-warn" id="warnBtn" aria-label="Cảnh báo" aria-describedby="warnTip">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+          </button>
+          <div class="tooltip" id="warnTip" role="tooltip">Không được spam điểm, chỉ tối đa 4 người bằng điểm nhau.</div>
+        </div>
         <button type="submit" class="btn-primary" id="submitBtn">
           <span class="spinner"></span><span id="submitText">Gửi dữ liệu</span>
         </button>
@@ -311,7 +335,8 @@
   ];
 
   const container = document.getElementById("sliders-container");
-  const errorBox  = document.getElementById("errorBox");
+  const warnBtn   = document.getElementById("warnBtn");
+  const warnWrap  = document.getElementById("warnWrap");
   const submitBtn = document.getElementById("submitBtn");
   const submitTxt = document.getElementById("submitText");
   const toastEl   = document.getElementById("toast");
@@ -375,12 +400,14 @@
     document.getElementById("statMin").textContent = Math.min(...values);
 
     if (dupScores.length) {
-      errorBox.classList.add("show");
-      errorBox.textContent = `Không được spam điểm, chỉ tối đa 4 người bằng điểm nhau.`;
+      if (!warnBtn.classList.contains("active")) {
+        warnBtn.classList.add("active", "pulse");
+        setTimeout(() => warnBtn.classList.remove("pulse"), 500);
+      }
       submitBtn.disabled = true;
       return false;
     }
-    errorBox.classList.remove("show");
+    warnBtn.classList.remove("active");
     submitBtn.disabled = false;
     return true;
   }
@@ -405,15 +432,13 @@
     }
   });
 
-  function resetAll() {
-    members.forEach((m, i) => {
-      document.getElementById(m.key).value = defaults[i];
-      document.getElementById(`num-${m.key}`).value = defaults[i];
-    });
-    validateSliders();
-  }
+  // Bấm vào nút cảnh báo để mở/đóng tooltip (dùng cho cảm ứng), bấm ra ngoài để đóng
+  warnBtn.addEventListener("click", e => {
+    e.stopPropagation();
+    warnWrap.classList.toggle("open");
+  });
+  document.addEventListener("click", () => warnWrap.classList.remove("open"));
 
-  document.getElementById("resetBtn").addEventListener("click", resetAll);
   validateSliders();
 
   document.getElementById("larkForm").addEventListener("submit", async function (e) {
