@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MVP - Dev Team</title>
+  <style>
+    :root {
+      --bg: #fafafa;
+      --card: #ffffff;
+      --text: #111827;
+      --muted: #6b7280;
+      --line: #e5e7eb;
+      --accent: #14b8a6;
+      --accent-dark: #0d9488;
+      --accent-soft: #ccfbf1;
+      --track: #e5e7eb;
+      --danger: #dc2626;
+      --success: #15803d;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      padding: 48px 16px;
+      -webkit-font-smoothing: antialiased;
+    }
+    .wrap { max-width: 480px; margin: 0 auto; }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    /* Header */
+    .hero {
+      padding: 28px 32px 22px;
+      position: relative;
+      overflow: hidden;
+      isolation: isolate;
+      background:
+        radial-gradient(90% 130% at 0% 0%, rgba(94, 234, 212, .55) 0%, transparent 60%),
+        radial-gradient(80% 120% at 100% 100%, rgba(8, 145, 178, .55) 0%, transparent 65%),
+        linear-gradient(135deg, #14b8a6 0%, #0d9488 100%);
+      color: #fff;
+    }
+    .hero::before {
+      content: "";
+      position: absolute; z-index: -1;
+      top: -110px; right: -70px;
+      width: 260px; height: 260px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255, 255, 255, .28) 0%, rgba(255, 255, 255, 0) 70%);
+      pointer-events: none;
+    }
+    .hero::after {
+      content: "";
+      position: absolute; z-index: -1;
+      left: 0; right: 0; top: 0; height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .55), transparent);
+    }
+    .hero-top { display: flex; align-items: center; gap: 16px; }
+    .hero-date { margin-left: auto; text-align: right; white-space: nowrap; }
+    .d-weekday {
+      font-size: 11px; font-weight: 600; letter-spacing: .08em;
+      text-transform: uppercase; color: rgba(255, 255, 255, .65);
+      margin-bottom: 3px;
+    }
+    .d-full { font-size: 15px; font-weight: 600; color: #fff; font-variant-numeric: tabular-nums; }
+    .logo {
+      flex: none;
+      width: 46px; height: 46px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, .12);
+      border: 1px solid rgba(255, 255, 255, .22);
+      color: #fff;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .logo svg { width: 22px; height: 22px; }
+    .header-text { min-width: 0; }
+    .eyebrow {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, .65);
+      margin-bottom: 3px;
+    }
+    h1 {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 650;
+      line-height: 1.2;
+      letter-spacing: -0.02em;
+    }
+    .body { padding: 8px 32px 32px; }
+
+    .stats {
+      display: flex;
+      gap: 0;
+      margin-top: 22px;
+      padding-top: 18px;
+      border-top: 1px solid rgba(255, 255, 255, .14);
+    }
+    .stat { flex: 1; }
+    .stat + .stat { padding-left: 20px; border-left: 1px solid rgba(255, 255, 255, .14); }
+    .stat .k { font-size: 12px; color: rgba(255, 255, 255, .6); margin-bottom: 3px; }
+    .stat .v { font-size: 22px; font-weight: 600; color: #fff; font-variant-numeric: tabular-nums; }
+
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 56px;
+      gap: 10px 16px;
+      align-items: center;
+      padding: 16px 0;
+      border-bottom: 1px solid var(--line);
+    }
+    .row:last-of-type { border-bottom: none; }
+    .name { font-size: 14px; font-weight: 500; }
+    .num {
+      grid-row: span 2;
+      grid-column: 2;
+      width: 56px; height: 34px;
+      text-align: center;
+      font: inherit; font-size: 14px; font-weight: 600;
+      font-variant-numeric: tabular-nums;
+      color: var(--text);
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      outline: none;
+      transition: border-color .15s, box-shadow .15s;
+      -moz-appearance: textfield;
+    }
+    .num::-webkit-outer-spin-button, .num::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+    .num:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(20, 184, 166, .22); }
+    .row.dup .num { border-color: var(--danger); color: var(--danger); }
+
+    input[type="range"] {
+      -webkit-appearance: none; appearance: none;
+      width: 100%; height: 4px; border-radius: 999px;
+      outline: none; cursor: pointer;
+      background: linear-gradient(to right, var(--accent) var(--p, 0%), var(--track) var(--p, 0%));
+    }
+    .row.dup input[type="range"] {
+      background: linear-gradient(to right, var(--danger) var(--p, 0%), #fecaca var(--p, 0%));
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%;
+      background: #fff; border: 2px solid var(--accent);
+      transition: transform .12s;
+    }
+    input[type="range"]::-moz-range-thumb {
+      width: 12px; height: 12px; border-radius: 50%;
+      background: #fff; border: 2px solid var(--accent);
+    }
+    input[type="range"]:active::-webkit-slider-thumb { transform: scale(1.15); }
+    .row.dup input[type="range"]::-webkit-slider-thumb { border-color: var(--danger); }
+    .row.dup input[type="range"]::-moz-range-thumb { border-color: var(--danger); }
+
+    .error-box {
+      display: none;
+      margin-top: 16px;
+      padding: 10px 12px;
+      font-size: 13px;
+      line-height: 1.45;
+      color: var(--danger);
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      border-radius: 8px;
+    }
+    .error-box.show { display: block; }
+
+    .actions { display: flex; gap: 10px; margin-top: 24px; }
+    button {
+      font: inherit; font-size: 14px; font-weight: 500;
+      height: 42px; padding: 0 18px;
+      border-radius: 8px; cursor: pointer;
+      transition: background .15s, opacity .15s;
+    }
+    .btn-primary {
+      flex: 1;
+      color: #fff; background: var(--accent); border: 1px solid var(--accent);
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .btn-primary:hover:not(:disabled) { background: var(--accent-dark); border-color: var(--accent-dark); }
+    .btn-primary:disabled { opacity: .35; cursor: not-allowed; }
+    .btn-ghost { color: var(--text); background: #fff; border: 1px solid var(--line); }
+    .btn-ghost:hover { background: #f3f4f6; }
+    .spinner {
+      width: 14px; height: 14px; border-radius: 50%;
+      border: 2px solid rgba(255,255,255,.35); border-top-color: #fff;
+      animation: spin .7s linear infinite; display: none;
+    }
+    .loading .spinner { display: inline-block; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .toast {
+      position: fixed; left: 50%; bottom: 24px;
+      transform: translate(-50%, 12px);
+      padding: 10px 16px;
+      font-size: 13px; font-weight: 500;
+      color: #fff; background: var(--text);
+      border-radius: 8px;
+      opacity: 0; pointer-events: none;
+      transition: opacity .2s, transform .2s;
+    }
+    .toast.show { opacity: 1; transform: translate(-50%, 0); }
+    .toast.ok { background: var(--success); }
+    .toast.err { background: var(--danger); }
+
+    .thanks {
+      display: none;
+      text-align: center;
+      padding: 48px 8px 40px;
+      animation: fadeUp .35s ease both;
+    }
+    .thanks.show { display: block; }
+    .thanks-icon {
+      width: 60px; height: 60px; margin: 0 auto 18px;
+      border-radius: 50%;
+      background: var(--accent-soft);
+      color: var(--accent);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .thanks-icon svg { width: 28px; height: 28px; }
+    .thanks h2 { margin: 0 0 6px; font-size: 20px; font-weight: 650; letter-spacing: -0.01em; }
+    .thanks p { margin: 0; font-size: 14px; color: var(--muted); }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+    @media (max-width: 480px) {
+      body { padding: 20px 12px; }
+      .hero { padding: 22px 18px 18px; }
+      .body { padding: 4px 18px 22px; }
+      .stat + .stat { padding-left: 12px; }
+      h1 { font-size: 20px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="wrap">
+  <div class="card">
+    <header class="hero">
+      <div class="hero-top">
+      <div class="logo" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 20V10"/><path d="M10 20V4"/><path d="M16 20v-7"/><path d="M22 20H2"/>
+        </svg>
+      </div>
+      <div class="header-text">
+        <div class="eyebrow">Matechmobile</div>
+        <h1>MVP - Dev Team</h1>
+      </div>
+      <div class="hero-date">
+        <div class="d-weekday" id="dateWeekday"></div>
+        <div class="d-full" id="dateFull"></div>
+      </div>
+      </div>
+    <div class="stats">
+      <div class="stat"><div class="k">Trung bình</div><div class="v" id="statAvg">0</div></div>
+      <div class="stat"><div class="k">Cao nhất</div><div class="v" id="statMax">0</div></div>
+      <div class="stat"><div class="k">Thấp nhất</div><div class="v" id="statMin">0</div></div>
+    </div>
+    </header>
+
+    <div class="body">
+
+    <div class="thanks" id="thanks" role="status">
+      <div class="thanks-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+      </div>
+      <h2>Cảm ơn bạn!</h2>
+      <p>Điểm đánh giá của bạn đã được ghi nhận.</p>
+    </div>
+
+    <form id="larkForm" novalidate>
+      <div id="sliders-container"></div>
+
+      <div id="errorBox" class="error-box" role="alert"></div>
+
+      <div class="actions">
+        <button type="button" class="btn-ghost" id="resetBtn">Đặt lại</button>
+        <button type="submit" class="btn-primary" id="submitBtn">
+          <span class="spinner"></span><span id="submitText">Gửi dữ liệu</span>
+        </button>
+      </div>
+    </form>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  // DÁN LINK WEBHOOK LARK BASE CỦA BẠN VÀO ĐÂY
+  const WEBHOOK_URL = "https://asg8xrpvwuif.sg.larksuite.com/base/automation/webhook/event/MgbraiExSwSE72hhYwlleYCOgee";
+
+  const members = [
+    { key: "TheAnh", label: "Thế Anh" },
+    { key: "Nga",    label: "Nga" },
+    { key: "Thai",   label: "Thái" },
+    { key: "Ty",     label: "Ty" },
+    { key: "Ly",     label: "Lý" },
+    { key: "Loi",    label: "Lợi" },
+    { key: "Khanh",  label: "Khánh" },
+    { key: "Toan",   label: "Toàn" }
+  ];
+
+  const container = document.getElementById("sliders-container");
+  const errorBox  = document.getElementById("errorBox");
+  const submitBtn = document.getElementById("submitBtn");
+  const submitTxt = document.getElementById("submitText");
+  const toastEl   = document.getElementById("toast");
+
+  (function showDate() {
+    const d = new Date();
+    const weekday = d.toLocaleDateString("vi-VN", { weekday: "long" });
+    const full = d.toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric" });
+    document.getElementById("dateWeekday").textContent = weekday;
+    document.getElementById("dateFull").textContent = full;
+  })();
+
+  const defaults = members.map((_, i) => 50);
+
+  members.forEach((m, i) => {
+    const row = document.createElement("div");
+    row.className = "row";
+    row.id = `row-${m.key}`;
+    row.innerHTML = `
+      <label class="name" for="${m.key}">${m.label}</label>
+      <input type="number" class="num" id="num-${m.key}" min="0" max="100" value="${defaults[i]}" inputmode="numeric" aria-label="Điểm của ${m.label}">
+      <input type="range" id="${m.key}" name="${m.key}" min="0" max="100" value="${defaults[i]}">
+    `;
+    container.appendChild(row);
+  });
+
+  function clamp(v) {
+    v = Math.round(Number(v));
+    if (isNaN(v)) v = 0;
+    return Math.min(100, Math.max(0, v));
+  }
+
+  function showToast(msg, type) {
+    toastEl.textContent = msg;
+    toastEl.className = "toast show " + (type || "");
+    clearTimeout(showToast.t);
+    showToast.t = setTimeout(() => toastEl.classList.remove("show"), 3000);
+  }
+
+  function validateSliders() {
+    const counts = {};
+    const values = [];
+
+    members.forEach(m => {
+      const el = document.getElementById(m.key);
+      const val = clamp(el.value);
+      values.push(val);
+      counts[val] = (counts[val] || 0) + 1;
+      el.style.setProperty("--p", val + "%");
+    });
+
+    const dupScores = Object.keys(counts).filter(k => counts[k] >= 4);
+
+    members.forEach((m, i) => {
+      document.getElementById(`row-${m.key}`).classList.toggle("dup", dupScores.includes(String(values[i])));
+    });
+
+    const sum = values.reduce((a, b) => a + b, 0);
+    document.getElementById("statAvg").textContent = (sum / values.length).toFixed(1).replace(/\.0$/, "");
+    document.getElementById("statMax").textContent = Math.max(...values);
+    document.getElementById("statMin").textContent = Math.min(...values);
+
+    if (dupScores.length) {
+      errorBox.classList.add("show");
+      errorBox.textContent = `Không được spam điểm, chỉ tối đa 4 người bằng điểm nhau.`;
+      submitBtn.disabled = true;
+      return false;
+    }
+    errorBox.classList.remove("show");
+    submitBtn.disabled = false;
+    return true;
+  }
+
+  container.addEventListener("input", e => {
+    const t = e.target;
+    if (t.type === "range") {
+      document.getElementById(`num-${t.id}`).value = t.value;
+    } else if (t.classList.contains("num")) {
+      if (t.value === "") return;
+      document.getElementById(t.id.replace("num-", "")).value = clamp(t.value);
+    }
+    validateSliders();
+  });
+
+  container.addEventListener("focusout", e => {
+    if (e.target.classList.contains("num")) {
+      const key = e.target.id.replace("num-", "");
+      e.target.value = clamp(e.target.value);
+      document.getElementById(key).value = e.target.value;
+      validateSliders();
+    }
+  });
+
+  function resetAll() {
+    members.forEach((m, i) => {
+      document.getElementById(m.key).value = defaults[i];
+      document.getElementById(`num-${m.key}`).value = defaults[i];
+    });
+    validateSliders();
+  }
+
+  document.getElementById("resetBtn").addEventListener("click", resetAll);
+  validateSliders();
+
+  document.getElementById("larkForm").addEventListener("submit", async function (e) {
+    e.preventDefault();
+    if (!validateSliders()) return;
+
+    const payload = {};
+    members.forEach(m => { payload[m.key] = Number(document.getElementById(m.key).value); });
+
+    submitBtn.disabled = true;
+    submitBtn.classList.add("loading");
+    submitTxt.textContent = "Đang gửi...";
+
+    try {
+      await fetch(WEBHOOK_URL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "text/plain" },
+        body: JSON.stringify(payload)
+      });
+      document.getElementById("larkForm").style.display = "none";
+      document.getElementById("thanks").classList.add("show");
+    } catch (err) {
+      showToast("Lỗi kết nối, không thể gửi dữ liệu tới Lark", "err");
+    } finally {
+      submitBtn.classList.remove("loading");
+      submitTxt.textContent = "Gửi dữ liệu";
+      validateSliders();
+    }
+  });
+</script>
+
+</body>
+</html>
