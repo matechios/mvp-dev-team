@@ -183,7 +183,8 @@
       width: 100%; height: 100%;
       transition: border-color .3s, background-color .3s, color .3s, box-shadow .3s;
     }
-    .score .num:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .score .num { cursor: default; caret-color: transparent; user-select: none; -webkit-user-select: none; }
+    .score .num:focus { box-shadow: none; }
 
     /* 0-19: u ám - xám đá, chập chờn như đèn sắp tắt, khói xám bốc lên */
     .row[data-tier="0"]:not(.dup) .num {
@@ -213,38 +214,35 @@
       25% { opacity: .8; }
       100% { transform: translateY(-30px) scale(1.9); opacity: 0; }
     }
-    /* 20-39: nước - nền xanh dương, viền phát sáng nhẹ, bong bóng nổi lên từ ô */
-    .row[data-tier="1"] { --glow: 96, 165, 250; --spd: 2.8s; }
+    /* 20-39: cảnh báo - nền đỏ nhạt, viền phát sáng nhẹ, dấu x nổi lên từ ô */
+    .row[data-tier="1"] { --glow: 248, 113, 113; --spd: 2.8s; }
     .row[data-tier="1"]:not(.dup) .num {
-      border-color: #60a5fa; color: #1e3a8a;
-      background: linear-gradient(#dbeafe, #93c5fd);
+      border-color: #f87171; color: #991b1b;
+      background: linear-gradient(#fee2e2, #fca5a5);
       animation: glow var(--spd) ease-in-out infinite;
     }
     .row[data-tier="1"]:not(.dup) .score::before,
     .row[data-tier="1"]:not(.dup) .score::after {
-      content: ""; position: absolute; pointer-events: none;
-      width: 7px; height: 7px; border-radius: 50%;
-      border: 1.5px solid rgba(96, 165, 250, .9);
-      background: rgba(219, 234, 254, .6);
-      left: 12px; top: 2px; opacity: 0;
-      animation: bubble 2.4s ease-in infinite;
+      content: "✕"; position: absolute; pointer-events: none;
+      font-size: 10px; font-weight: 800; line-height: 1; color: #ef4444;
+      left: 10px; top: 2px; opacity: 0;
+      animation: crossUp 2.4s ease-out infinite;
     }
-    .row[data-tier="1"]:not(.dup) .score::after { left: 36px; width: 5px; height: 5px; animation-delay: 1.2s; animation-duration: 2.8s; }
-    @keyframes bubble {
-      0% { transform: translate(0, 0) scale(.6); opacity: 0; }
+    .row[data-tier="1"]:not(.dup) .score::after { left: 36px; font-size: 8px; animation-delay: 1.2s; animation-duration: 2.8s; }
+    @keyframes crossUp {
+      0% { transform: translateY(0) rotate(-20deg) scale(.6); opacity: 0; }
       20% { opacity: 1; }
-      50% { transform: translate(3px, -14px) scale(1); }
-      100% { transform: translate(-2px, -30px) scale(1.15); opacity: 0; }
+      100% { transform: translateY(-28px) rotate(25deg) scale(1.1); opacity: 0; }
     }
-    /* 40-69: tím - nền tím nhạt, vòng sóng lan tỏa */
+    /* 40-69: xanh dương - nền gradient xanh dương, vòng sóng lan tỏa */
     .row[data-tier="2"]:not(.dup) .num {
-      border-color: #a78bfa; color: #4c1d95;
-      background: linear-gradient(#ede9fe, #c4b5fd);
+      border-color: #3b82f6; color: #1e3a8a;
+      background: linear-gradient(#dbeafe, #60a5fa);
       animation: ripple 2.2s ease-out infinite;
     }
     @keyframes ripple {
-      0% { box-shadow: 0 0 0 0 rgba(139, 92, 246, .55); }
-      100% { box-shadow: 0 0 0 10px rgba(139, 92, 246, 0); }
+      0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, .55); }
+      100% { box-shadow: 0 0 0 10px rgba(59, 130, 246, 0); }
     }
     /* 70-99: nền gradient + ánh sáng quét + viền phát sáng */
     .row[data-tier="3"] { --bd: #2dd4bf; --ink: #134e4a; --c1: #ccfbf1; --c2: #5eead4; --glow: 45, 212, 191; --spd: 2.4s; }  /* 70-84 ngọc */
@@ -492,7 +490,7 @@
     row.innerHTML = `
       <label class="name" for="${m.key}">${m.label}</label>
       <div class="score">
-        <input type="number" class="num" id="num-${m.key}" min="0" max="100" value="${defaults[i]}" inputmode="numeric" aria-label="Điểm của ${m.label}">
+        <input type="number" class="num" id="num-${m.key}" min="0" max="100" value="${defaults[i]}" readonly tabindex="-1" aria-label="Điểm của ${m.label}">
       </div>
       <input type="range" id="${m.key}" name="${m.key}" min="0" max="100" value="${defaults[i]}">
     `;
